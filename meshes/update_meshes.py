@@ -6,8 +6,9 @@ RESOLUTION = 3
 
 # TODO: output fewer points for straight segments.
 def segment_points(start, end, resolution):
-    return mathutils.geometry.interpolate_bezier(
-        start.co, start.handle_right, end.handle_left, end.co, resolution)
+    yield start.co
+    for coord in mathutils.geometry.interpolate_bezier(start.co, start.handle_right, end.handle_left, end.co, resolution):
+        yield coord
 
 
 def segments(spline):
@@ -18,11 +19,13 @@ def segments(spline):
 
 
 def points(spline):
-    points = [spline.bezier_points[0].co]
+    points = []
     for segment in segments(spline):
         seg_points = segment_points(
-            segment[0], segment[1], RESOLUTION)[1:-1]
+            segment[0], segment[1], RESOLUTION)
         points.extend(seg_points)
+    if not spline.use_cyclic_u:
+        points.append(segment.bezier_points[-1].end.co)
     return points
 
 
